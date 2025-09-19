@@ -54,7 +54,7 @@ REST_FRAMEWORK = {
 }
 
 GRAPHENE = {
-    "SCHEMA": "tasks_app.schema.schema",
+    "SCHEMA": "tasks_app.graph_api.schema",
 }
 
 
