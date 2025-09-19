@@ -17,3 +17,4 @@ class PersonalTaskSerializer(serializers.ModelSerializer):
         if instance.assigned_to != user:
             raise serializers.ValidationError("You can only update your own tasks.")
         return super().update(instance, validated_data)
+    

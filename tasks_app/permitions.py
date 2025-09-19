@@ -1,5 +1,7 @@
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
-class IsOwner:
+
+class IsOwner(BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
     
