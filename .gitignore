@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+env/ # To ignore your virtual environment folder
+.env # To ignore a .env file for environment variables
+db.sqlite3 # If youre using SQLite and dont want to track it
