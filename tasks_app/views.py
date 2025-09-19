@@ -26,30 +26,32 @@ class TaskApiView(APIView):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
     
-    def put(self, request, u_id):
-        user = request.user
+    def patch(self, request):
+        u_id = request.query_params.get("u_id")
         try:
-            task = PersonalTask.objects.get(u_id=u_id, assigned_to=user)
+            task = PersonalTask.objects.get(u_id=u_id)
         except PersonalTask.DoesNotExist:
-            return Response({"error": "Task not found or you do not have permission to edit it."}, status=404)
+            return Response({"error": "Task not found."}, status=404)
         
         data = request.data.copy()
-        data['assigned_to'] = user.id
-        serializer = PersonalTaskSerializer(task, data=data)
+        serializer = PersonalTaskSerializer(task, data=data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)  
     
-    def delete(self, request, u_id):
+    def delete(self, request):
+        u_id = request.query_params.get("u_id")
         user = request.user
         try:
-            task = PersonalTask.objects.get(u_id=u_id, assigned_to=user)
+            task = PersonalTask.objects.get(u_id=u_id)
         except PersonalTask.DoesNotExist:
-            return Response({"error": "Task not found or you do not have permission to delete it."}, status=404)
+            return Response({"error": "Task not found."}, status=404)
+        if task.assigned_to != user:
+            return Response({"error": "You can only delete your own tasks."}, status=403)   
         
         task.delete()
-        return Response(status=204)
+        return Response({"message": "Task deleted successfully"}, status=204)
 
 
 class UpdateAuthTokenView(APIView):
