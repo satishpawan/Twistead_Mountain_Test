@@ -20,11 +20,13 @@ from django.urls import path
 from rest_framework import routers
 from tasks_app.views import TaskApiView, UpdateAuthTokenView
 from rest_framework.authtoken.views import obtain_auth_token
-
+from tasks_app.views import GraphQLApiView
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/signin/", obtain_auth_token, name="signin"),
     path('api-task/', TaskApiView.as_view(), name='api_task'),
     path('api-token-auth/', UpdateAuthTokenView.as_view(), name='api_token_auth'),
+    path("graphql/", csrf_exempt(GraphQLApiView.as_view(graphiql=True))),  # GraphQL endpoint
 ]

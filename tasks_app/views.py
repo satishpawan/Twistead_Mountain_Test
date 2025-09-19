@@ -1,4 +1,5 @@
 from multiprocessing.managers import Token
+from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
@@ -7,6 +8,8 @@ from .models import PersonalTask
 from .seralizers import PersonalTaskSerializer
 from tasks_app.permitions import IsOwner
 from rest_framework.permissions import IsAuthenticated
+from graphene_django.views import GraphQLView
+
 
 # Create your views here.
 
@@ -66,3 +69,24 @@ class UpdateAuthTokenView(APIView):
         if user is not None:
             token, created = Token.objects.get_or_create(user=user)
             return Response({"token": token.key, 'username': user.username, 'email': user.email})
+        return Response({"error": "Invalid credentials"}, status=401)
+    
+class GraphQLApiView(GraphQLView):
+
+    def dispatch(self, request, *args, **kwargs):
+        auth = request.META.get("HTTP_AUTHORIZATION")
+        if not auth:
+            return JsonResponse({"error": "Authentication required"}, status=401)
+
+        parts = auth.split()
+        if len(parts) == 2 and parts[0].lower() == "token":
+            try:
+                token = Token.objects.select_related("user").get(key=parts[1])
+                request.user = token.user
+            except Token.DoesNotExist:
+                return JsonResponse({"error": "Invalid token"}, status=401)
+        else:
+            return JsonResponse({"error": "Invalid Authorization header"}, status=401)
+
+        return super().dispatch(request, *args, **kwargs)
+
